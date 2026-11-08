@@ -1,0 +1,13 @@
+# Keep competition data and generated results off GitHub.
+/data/*
+!/data/README.md
+/outputs/*
+!/outputs/.gitkeep
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.streamlit/secrets.toml
+.DS_Store
+Thumbs.db
