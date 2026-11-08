@@ -134,7 +134,14 @@ def page_overview() -> None:
                                    xbins={"start": 0, "end": 10, "size": 0.5}))
         fig.add_trace(go.Histogram(x=adjusted["Adjusted_Score"], name="Điểm đề xuất", marker_color="#D64545", opacity=0.65,
                                    xbins={"start": 0, "end": 10, "size": 0.5}))
-        fig.update_layout(barmode="overlay", xaxis_title="Điểm (thang 10)", yaxis_title="Số lượt")
+        fig.update_layout(
+            barmode="overlay",
+            xaxis_title="Điểm (thang 10)",
+            yaxis_title="Số lượt",
+            legend={"orientation": "h", "yanchor": "top", "y": -0.25,
+                    "xanchor": "center", "x": 0.5},
+            margin={"b": 75},
+        )
         st.plotly_chart(fig, use_container_width=True)
     with right:
         st.subheader("GPA danh nghĩa và TCI")
@@ -143,7 +150,8 @@ def page_overview() -> None:
             fig.add_trace(
                 go.Histogram(
                     x=students["GPA danh nghĩa (quy đổi tuyến tính)"],
-                    name="GPA danh nghĩa (quy đổi tuyến tính)",
+                    name="GPA danh nghĩa",
+                    marker_color="#2E8B57",
                     opacity=0.65,
                     xbins={"start": 0, "end": 4, "size": 0.1},
                 )
@@ -152,6 +160,7 @@ def page_overview() -> None:
                 go.Histogram(
                     x=students["TCI"],
                     name="TCI sau đề xuất",
+                    marker_color="#D64545",
                     opacity=0.65,
                     xbins={"start": 0, "end": 4, "size": 0.1},
                 )
@@ -160,6 +169,9 @@ def page_overview() -> None:
                 barmode="overlay",
                 xaxis_title="Thang 4 (quy đổi tuyến tính)",
                 yaxis_title="Số sinh viên",
+                legend={"orientation": "h", "yanchor": "top", "y": -0.25,
+                        "xanchor": "center", "x": 0.5},
+                margin={"b": 75},
             )
             st.plotly_chart(fig, use_container_width=True)
 
