@@ -130,9 +130,9 @@ def page_overview() -> None:
     with left:
         st.subheader("Phân phối điểm trước và sau đề xuất")
         fig = go.Figure()
-        fig.add_trace(go.Histogram(x=adjusted["_score"], name="Điểm gốc", opacity=0.65,
+        fig.add_trace(go.Histogram(x=adjusted["_score"], name="Điểm gốc", marker_color="#2E8B57", opacity=0.65,
                                    xbins={"start": 0, "end": 10, "size": 0.5}))
-        fig.add_trace(go.Histogram(x=adjusted["Adjusted_Score"], name="Điểm đề xuất", opacity=0.65,
+        fig.add_trace(go.Histogram(x=adjusted["Adjusted_Score"], name="Điểm đề xuất", marker_color="#D64545", opacity=0.65,
                                    xbins={"start": 0, "end": 10, "size": 0.5}))
         fig.update_layout(barmode="overlay", xaxis_title="Điểm (thang 10)", yaxis_title="Số lượt")
         st.plotly_chart(fig, use_container_width=True)
