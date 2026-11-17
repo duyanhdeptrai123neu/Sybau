@@ -21,14 +21,16 @@ Lớp đang đánh giá luôn bị loại khỏi nhóm tham chiếu. Nếu khôn
 chiếu phù hợp sau các bước trên, hệ thống không gán score bất thường và ghi rõ không
 đủ dữ liệu so sánh. Điểm trung bình, tỷ lệ điểm từ 8,5 và độ lệch chuẩn được tính trên
 điểm học phần không trống; đồ án/thực tập/khóa luận được tách khỏi lớp thường.
+Các lớp đồ án/thực tập/khóa luận hoặc lớp thiếu nhóm đối chiếu mang nhãn
+`NOT_ASSESSED`, không phải `NO_FLAG`, và không được tự động hiệu chỉnh.
 
 Độ lệch trung bình dùng z-score robust dựa trên trung vị và MAD của lớp đối chiếu. Score
 0–1 hiện lấy tín hiệu mạnh nhất trong độ lệch trung bình, tỷ lệ điểm từ 8,5 trên 60% và
 độ phân tán thấp. Nhãn gồm HIGH_INFLATION, UNUSUALLY_STEEP, SUSPICIOUS_DISTRIBUTION
 hoặc NO_FLAG. Lớp ít sinh viên hay ít lớp đối chiếu được hạ mức tin cậy. Score chưa
-được hiệu chuẩn thành xác suất. Công thức score trọng số đang được nhóm xem xét riêng;
-chưa coi đó là công thức triển khai cho đến khi chuẩn hóa các thành phần và thống nhất
-cách xử lý chỉ số thiếu.
+được hiệu chuẩn thành xác suất. MVP giữ cách tổng hợp theo tín hiệu mạnh nhất; công thức
+score trọng số đề xuất trong buổi họp chưa được áp dụng vì các thành phần và cách xử lý
+chỉ số thiếu chưa được xác định/kiểm chứng đầy đủ.
 
 ## Điểm đề xuất
 
@@ -43,18 +45,40 @@ thường về độ phân tán có thể được gắn cờ nhưng không tự
 
 ## TCI
 
-Do bộ dữ liệu không kèm quy tắc đổi thang 10 sang GPA 4 chính thức, MVP dùng phép đổi
-tuyến tính: điểm 4 = Adjusted_Score × 0.4, sau đó tính trung bình theo tín chỉ. Ngưỡng
-Advanced (3,60), Proficient (3,20), Intermediate (2,50) và At-Risk / Beginner (<2,50)
-lấy theo đề bài. Cần thay phép quy đổi tuyến tính bằng bảng quy đổi được xác nhận trước
-khi dùng kết quả như xếp loại chính thức.
+TCI dùng bảng quy đổi điểm thang 10 sang thang 4 được công bố trong Quyết định
+712/QĐ-ĐHKTQD năm 2025 làm thang tham chiếu thử nghiệm. Theo [hướng dẫn của NEU], điểm
+học phần được làm tròn đến một chữ số thập phân trước khi quy đổi:
+
+| Điểm thang 10 sau làm tròn | Điểm thang 4 |
+|---:|---:|
+| 9,0–10,0 | 4,0 |
+| 8,5–8,9 | 4,0 |
+| 8,0–8,4 | 3,5 |
+| 7,0–7,9 | 3,0 |
+| 6,5–6,9 | 2,5 |
+| 5,5–6,4 | 2,0 |
+| 5,0–5,4 | 1,5 |
+| 4,5–4,9 | 1,0 |
+| Dưới 4,5 | 0,0 |
+
+[hướng dẫn của NEU]: https://fit.neu.edu.vn/post/how-to-calculate-course-grades-and-cumulative-gpa-at-neu
+
+GPA danh nghĩa và TCI đều là trung bình có trọng số tín chỉ; GPA danh nghĩa dùng điểm
+gốc, TCI dùng điểm đề xuất. Không áp dụng thêm hệ số giảm trọng số theo Anomaly Score
+trong TCI chính để tránh giảm ảnh hưởng một học phần hai lần. Ngưỡng Advanced (3,60),
+Proficient (3,20), Intermediate (2,50) và At-Risk / Beginner (<2,50) lấy theo đề bài.
+
+Bảng trên là quy tắc tham chiếu của prototype, không mặc định áp dụng cho mọi khóa và
+mọi năm dữ liệu. Cần xác nhận quy định có hiệu lực cho từng nhóm sinh viên trước khi
+diễn giải như GPA chính thức. Khoảng cách GPA danh nghĩa–TCI chỉ là tín hiệu phân tích,
+không chứng minh sinh viên gian lận hay cố ý chọn lớp dễ.
 
 ## Giới hạn dữ liệu
 
 - Tệp chỉ đại diện cho một khoa, không có ngành, giảng viên, hình thức thi, điểm đầu vào
   hoặc điểm các môn nền tảng được định danh.
 - Tương quan với điểm trung bình các môn khác chỉ là chỉ báo khám phá, không được coi là
-  tương quan với năng lực nền tảng.
+  tương quan với năng lực nền tảng; chỉ dùng khi có danh mục môn nền tảng được xác nhận.
 - Điểm 0 có thể gồm vắng thi/bỏ học; ô trống có nghĩa là thiếu dữ liệu.
 - 2019–2020 thiếu nhiều điểm quá trình; một số lớp 2025–2026 chưa có điểm cuối kỳ.
 - Gắn cờ không chứng minh sai phạm. Mọi hiệu chỉnh chỉ là đề xuất cần con người rà soát.

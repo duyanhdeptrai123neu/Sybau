@@ -12,10 +12,12 @@ trên bản đang demo. Mỗi người ghi quyết định, lý do và người 
    score hiện là mức sàng lọc hay nhóm muốn hiệu chuẩn lại.
 3. **Hiệu chỉnh:** thảo luận công thức co rút và giới hạn ±0,75; xem việc kéo điểm lớp
    cao/thấp về mức đối chiếu có công bằng không; thống nhất luôn giữ nguyên điểm gốc.
-4. **TCI:** xác nhận trọng số tín chỉ và bốn ngưỡng; hỏi ban tổ chức/giảng viên về
-   bảng quy đổi thang điểm chính thức; tránh gọi đây là GPA chính thức trước khi có căn cứ.
-5. **Dashboard và bảo mật:** đảm bảo người dùng hiểu cờ không kết luận sai phạm; chỉ
-   chạy cục bộ với dữ liệu thật; không commit hoặc tải bộ dữ liệu lên dịch vụ ngoài.
+4. **TCI:** xác nhận trọng số tín chỉ và bốn ngưỡng; đối chiếu bảng quy đổi NEU áp dụng
+   cho từng khóa/năm dữ liệu; không gọi TCI thử nghiệm là GPA chính thức nếu chưa được
+   xác nhận.
+5. **Dashboard và bảo mật:** phân biệt NO_FLAG với NOT_ASSESSED; đảm bảo người dùng hiểu
+   cờ không kết luận sai phạm và không tự động quyết định học bổng/cảnh báo; chỉ chạy cục
+   bộ với dữ liệu thật; không commit hoặc tải bộ dữ liệu lên dịch vụ ngoài.
 
 ## Chia vai review nhanh
 

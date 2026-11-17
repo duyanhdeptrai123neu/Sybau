@@ -23,9 +23,11 @@ def adjust_grades(data: pd.DataFrame, anomalies: pd.DataFrame) -> pd.DataFrame:
     result["Nhãn"] = result["Nhãn"].fillna("NO_FLAG")
     result["Điểm TB tham chiếu"] = result["Điểm TB tham chiếu"].fillna(result["_score"].mean())
     result["Điểm TB lớp"] = result["Điểm TB lớp"].fillna(result["_score"].mean())
+    not_assessed = result["Nhãn"].eq("NOT_ASSESSED")
+    result.loc[not_assessed, "Điểm TB tham chiếu"] = np.nan
 
     # Shrink only the section-level shift, and cap it so a flag is not treated as proof.
-    shift = (result["Điểm TB lớp"] - result["Điểm TB tham chiếu"]).clip(-1.5, 1.5)
+    shift = (result["Điểm TB lớp"] - result["Điểm TB tham chiếu"]).clip(-1.5, 1.5).fillna(0.0)
     location_score = result["Anomaly Score"].where(
         result["Nhãn"].isin(["HIGH_INFLATION", "UNUSUALLY_STEEP"]), 0.0
     )
@@ -36,12 +38,17 @@ def adjust_grades(data: pd.DataFrame, anomalies: pd.DataFrame) -> pd.DataFrame:
         result["_score"] - result["Mức đề xuất điều chỉnh"]
     ).clip(0, 10)
     result["Review Required"] = (
-        (result["Nhãn"] != "NO_FLAG")
+        result["Nhãn"].isin(
+            ["HIGH_INFLATION", "UNUSUALLY_STEEP", "SUSPICIOUS_DISTRIBUTION"]
+        )
         | (result["Mức đề xuất điều chỉnh"].abs() >= 0.25)
     )
-    result["Ghi chú điều chỉnh"] = np.where(
-        result["Review Required"],
-        "Ước tính minh họa; cần hội đồng chuyên môn rà soát",
-        "Không có điều chỉnh theo ngưỡng MVP",
+    result["Ghi chú điều chỉnh"] = np.select(
+        [not_assessed, result["Review Required"]],
+        [
+            "Chưa đánh giá được; lớp bị loại khỏi so sánh hoặc thiếu nhóm đối chiếu, giữ nguyên điểm gốc",
+            "Ước tính minh họa; cần hội đồng chuyên môn rà soát",
+        ],
+        default="Không có điều chỉnh theo ngưỡng MVP",
     )
     return result

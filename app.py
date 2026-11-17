@@ -115,16 +115,26 @@ def page_overview() -> None:
     data, anomalies, adjusted, students = (
         result["data"], result["anomalies"], result["adjusted"], result["students"]
     )
-    flagged = anomalies[anomalies["Nhãn"] != "NO_FLAG"]
+    review_labels = ["HIGH_INFLATION", "UNUSUALLY_STEEP", "SUSPICIOUS_DISTRIBUTION"]
+    flagged = anomalies[anomalies["Nhãn"].isin(review_labels)]
     high = int((anomalies["Nhãn"] == "HIGH_INFLATION").sum())
+    not_assessed = int((anomalies["Nhãn"] == "NOT_ASSESSED").sum())
+    no_comparator = int(
+        anomalies["Nhóm đối chiếu"].eq("Không đủ lớp đối chiếu theo môn/kỳ/năm").sum()
+    )
     at_risk = int((students["Phân loại"] == "At-Risk / Beginner").sum())
 
     metrics = st.columns(5)
     metrics[0].metric("Lượt điểm", f"{len(data):,}")
     metrics[1].metric("Sinh viên", f"{data['Mã SV'].nunique():,}")
     metrics[2].metric("Lớp học phần", f"{anomalies['Mã lớp học phần'].nunique():,}")
-    metrics[3].metric("Lớp có cờ", f"{len(flagged):,}", f"{high:,} HIGH_INFLATION")
+    metrics[3].metric("Lớp nghi vấn", f"{len(flagged):,}", f"{high:,} HIGH_INFLATION")
     metrics[4].metric("At-Risk / Beginner", f"{at_risk:,}")
+    if not_assessed:
+        st.caption(
+            f"Chưa đánh giá: {not_assessed:,} lớp "
+            f"({no_comparator:,} lớp thiếu đối chiếu; các lớp đồ án/thực tập cũng được loại riêng)."
+        )
 
     left, right = st.columns(2)
     with left:
@@ -149,7 +159,7 @@ def page_overview() -> None:
             fig = go.Figure()
             fig.add_trace(
                 go.Histogram(
-                    x=students["GPA danh nghĩa (quy đổi tuyến tính)"],
+                    x=students["GPA danh nghĩa (quy đổi NEU, thử nghiệm)"],
                     name="GPA danh nghĩa",
                     marker_color="#2E8B57",
                     opacity=0.65,
@@ -167,7 +177,7 @@ def page_overview() -> None:
             )
             fig.update_layout(
                 barmode="overlay",
-                xaxis_title="Thang 4 (quy đổi tuyến tính)",
+                xaxis_title="Thang 4 (quy đổi NEU, thử nghiệm)",
                 yaxis_title="Số sinh viên",
                 legend={"orientation": "h", "yanchor": "top", "y": -0.25,
                         "xanchor": "center", "x": 0.5},
@@ -181,8 +191,9 @@ def page_overview() -> None:
     st.dataframe(pd.DataFrame({"Cấp độ": counts.index, "Số sinh viên": counts.values}),
                  hide_index=True, use_container_width=True)
     st.caption(
-        "TCI là chỉ số thử nghiệm: điểm thang 10 được quy đổi tuyến tính sang thang 4 "
-        "và tính theo tín chỉ. Cần xác nhận bảng quy đổi chính thức trước khi kết luận."
+        "TCI thử nghiệm: điểm được làm tròn một chữ số, quy đổi theo bảng điểm NEU "
+        "(QĐ 712/2025) rồi tính theo tín chỉ. Cần xác nhận quy định áp dụng cho từng khóa; "
+        "TCI và cờ rà soát không phải kết luận học vụ hay sai phạm."
     )
 
 
@@ -199,8 +210,9 @@ def page_anomalies() -> None:
     selected = st.selectbox("Lọc theo nhãn", labels)
     shown = anomalies if selected == "Tất cả" else anomalies[anomalies["Nhãn"] == selected]
     st.write(
-        "Ưu tiên so sánh lớp với lớp khác cùng môn. Nếu thiếu lớp đối chiếu, hệ thống dùng "
-        "nhóm môn và hạ mức tin cậy."
+        "Ưu tiên cùng môn, cùng năm học và học kỳ. Nếu thiếu, hệ thống lần lượt mở rộng "
+        "nhóm đối chiếu. NOT_ASSESSED nghĩa là không đủ đối chiếu hoặc lớp được loại khỏi "
+        "phân tích; trạng thái này không đồng nghĩa với NO_FLAG."
     )
     display = [
         "Mã lớp học phần", "Mã môn", "Năm học", "Học kỳ", "Số sinh viên",
@@ -220,7 +232,8 @@ def page_anomalies() -> None:
                  use_container_width=True, hide_index=True)
     st.caption(
         "Tương quan với điểm các môn khác chỉ là chỉ báo khám phá, không phải điểm nền tảng "
-        "được xác nhận. Cờ bất thường yêu cầu rà soát, không phải kết luận sai phạm."
+        "được xác nhận. Cờ bất thường yêu cầu rà soát, không phải kết luận sai phạm hay căn cứ "
+        "tự động cho học bổng/cảnh báo học vụ."
     )
 
 
@@ -271,12 +284,13 @@ def page_student_profiling() -> None:
     level = st.selectbox("Lọc cấp độ", levels)
     view = students if level == "Tất cả" else students[students["Phân loại"] == level]
     columns = [
-        "Mã SV", "TCI", "Phân loại", "GPA danh nghĩa (quy đổi tuyến tính)",
-        "Chênh lệch TCI", "Tổng tín chỉ", "Số học phần", "Số lớp cần rà soát",
+        "Mã SV", "TCI", "Phân loại", "GPA danh nghĩa (quy đổi NEU, thử nghiệm)",
+        "Chênh lệch TCI", "Tổng tín chỉ", "Số học phần", "Số học phần chưa đánh giá",
+        "Số lớp cần rà soát",
     ]
     st.dataframe(
         view[columns].style.format({
-            "TCI": "{:.2f}", "GPA danh nghĩa (quy đổi tuyến tính)": "{:.2f}",
+            "TCI": "{:.2f}", "GPA danh nghĩa (quy đổi NEU, thử nghiệm)": "{:.2f}",
             "Chênh lệch TCI": "{:+.2f}", "Tổng tín chỉ": "{:.0f}",
         }),
         use_container_width=True, hide_index=True,
@@ -294,8 +308,13 @@ def page_student_profiling() -> None:
     kpis[2].metric("Học phần", f"{int(summary['Số học phần'])}")
     kpis[3].metric("Lớp cần rà soát", f"{int(summary['Số lớp cần rà soát'])}")
     st.write(
-        "TCI là trung bình điểm đề xuất quy đổi tuyến tính và tính theo tín chỉ. "
-        "Mã sinh viên chỉ được dùng trong phiên ứng dụng để tra cứu."
+        "TCI là chỉ số thử nghiệm tính từ điểm đề xuất theo tín chỉ; học phần chưa đánh giá "
+        "được giữ điểm gốc. Cờ rà soát chỉ là tín hiệu cần xem xét, không phải kết luận "
+        "gian lận hay căn cứ tự động để xét học bổng/cảnh báo. Mã SV chỉ được dùng trong phiên."
+    )
+    st.caption(
+        f"Học phần chưa đánh giá của sinh viên này: "
+        f"{int(summary['Số học phần chưa đánh giá']):,}."
     )
     st.dataframe(
         detail[

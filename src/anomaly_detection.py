@@ -69,8 +69,8 @@ def detect_anomalies(data: pd.DataFrame, min_class_size: int = 8) -> pd.DataFram
                     "Z robust": np.nan,
                     "Nhóm đối chiếu": "Loại khỏi so sánh lớp thường",
                     "Độ tin cậy": "Không đánh giá",
-                    "Anomaly Score": 0.0,
-                    "Nhãn": "NO_FLAG",
+                    "Anomaly Score": np.nan,
+                    "Nhãn": "NOT_ASSESSED",
                     "Giải thích": "Đồ án/thực tập/khóa luận được tách khỏi phân tích lớp thường",
                 }
             )
@@ -140,8 +140,8 @@ def detect_anomalies(data: pd.DataFrame, min_class_size: int = 8) -> pd.DataFram
                     "Z robust": np.nan,
                     "Nhóm đối chiếu": "Không đủ lớp đối chiếu theo môn/kỳ/năm",
                     "Độ tin cậy": "Không đánh giá",
-                    "Anomaly Score": 0.0,
-                    "Nhãn": "NO_FLAG",
+                    "Anomaly Score": np.nan,
+                    "Nhãn": "NOT_ASSESSED",
                     "Giải thích": (
                         "Không đủ lớp cùng môn hoặc cùng nhóm môn để tạo đối chiếu đáng tin cậy"
                     ),

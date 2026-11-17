@@ -43,6 +43,8 @@ Request để thành viên khác xem thay đổi trước khi nhập.
 ## Giới hạn MVP
 
 Tệp điểm chỉ bao phủ một khoa, không có điểm đầu vào hay danh sách môn nền tảng. TCI
-hiện dùng phép đổi tuyến tính thang 10 sang thang 4 vì chưa có bảng quy đổi chính thức.
-Anomaly Score là điểm sàng lọc theo quy tắc, không phải xác suất sai phạm. Xem
-docs/methodology.md trước khi diễn giải kết quả.
+dùng bảng quy đổi NEU theo Quyết định 712/2025 làm thang tham chiếu thử nghiệm; cần xác
+nhận quy định áp dụng cho từng khóa trước khi diễn giải như GPA chính thức. Lớp không
+có nhóm đối chiếu mang nhãn NOT_ASSESSED, không đồng nghĩa với NO_FLAG. Anomaly Score là
+điểm sàng lọc theo quy tắc, không phải xác suất sai phạm; cờ rà soát không phải căn cứ
+tự động cho học bổng hay cảnh báo học vụ. Xem docs/methodology.md trước khi diễn giải.
