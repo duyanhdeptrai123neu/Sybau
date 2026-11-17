@@ -10,8 +10,9 @@ trên bản đang demo. Mỗi người ghi quyết định, lý do và người 
 2. **Phát hiện bất thường:** nhóm có đồng ý so sánh cùng môn qua các năm không; cần tối
    thiểu bao nhiêu lớp đối chiếu và sĩ số; ngưỡng điểm A trên 60% có phù hợp không;
    score hiện là mức sàng lọc hay nhóm muốn hiệu chuẩn lại.
-3. **Hiệu chỉnh:** thảo luận công thức co rút và giới hạn ±0,75; xem việc kéo điểm lớp
-   cao/thấp về mức đối chiếu có công bằng không; thống nhất luôn giữ nguyên điểm gốc.
+3. **Hiệu chỉnh:** rà soát quy tắc siết thử nghiệm hiện tại: chỉ lớp HIGH_INFLATION; chỉ
+   điểm trên 8,0 bị giảm tăng dần theo điểm và Anomaly Score (tối đa 1,5 điểm). Các điểm
+   còn lại giữ nguyên; luôn lưu riêng điểm gốc và xem điểm mới là đề xuất cần duyệt.
 4. **TCI:** xác nhận trọng số tín chỉ và bốn ngưỡng; đối chiếu bảng quy đổi NEU áp dụng
    cho từng khóa/năm dữ liệu; không gọi TCI thử nghiệm là GPA chính thức nếu chưa được
    xác nhận.

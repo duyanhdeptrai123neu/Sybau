@@ -34,14 +34,20 @@ chỉ số thiếu chưa được xác định/kiểm chứng đầy đủ.
 
 ## Điểm đề xuất
 
-Với lớp có Anomaly Score s, điểm trung bình lớp m và trung bình đối chiếu b:
+Với lớp có nhãn HIGH_INFLATION, Anomaly Score s, điểm trung bình lớp m và trung bình đối chiếu b:
 
-    delta = clip(0.5 × s × clip(m − b, −1.5, 1.5), −0.75, 0.75)
-    Adjusted_Score = clip(Điểm gốc − delta, 0, 10)
+    excess = clip(m − b, 0, 2)
+    class_pressure = clip(0.75 × s × excess, 0, 1.5)
+    high_grade_share = clip((Điểm gốc − 8) / 2, 0, 1)
+    reduction = class_pressure × high_grade_share
+    Adjusted_Score = clip(Điểm gốc − reduction, 0, 10)
 
-Cả lớp có điểm cao bất thường và thấp bất thường đều được đề xuất dịch về nhóm đối
-chiếu; thứ hạng nội bộ lớp được giữ nguyên trước khi chạm giới hạn 0–10. Lớp chỉ bất
-thường về độ phân tán có thể được gắn cờ nhưng không tự ý dời điểm trung bình.
+Đề xuất hiện chỉ siết điểm ở lớp bị gắn nhãn HIGH_INFLATION. Điểm dưới hoặc bằng 8,0
+không đổi; điểm cao hơn 8,0 bị giảm tăng dần theo mức điểm,
+tối đa bằng class_pressure. Không có trường hợp nào được tăng điểm. Lớp UNUSUALLY_STEEP
+hoặc SUSPICIOUS_DISTRIBUTION chỉ được gắn cờ rà soát, không tự động hiệu chỉnh. Mức giảm
+tối đa 1,5 điểm là cấu hình thử nghiệm cần được nhóm chuyên môn rà soát trước khi cân
+nhắc áp dụng thực tế.
 
 ## TCI
 

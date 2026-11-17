@@ -26,14 +26,15 @@ def adjust_grades(data: pd.DataFrame, anomalies: pd.DataFrame) -> pd.DataFrame:
     not_assessed = result["Nhãn"].eq("NOT_ASSESSED")
     result.loc[not_assessed, "Điểm TB tham chiếu"] = np.nan
 
-    # Shrink only the section-level shift, and cap it so a flag is not treated as proof.
-    shift = (result["Điểm TB lớp"] - result["Điểm TB tham chiếu"]).clip(-1.5, 1.5).fillna(0.0)
-    location_score = result["Anomaly Score"].where(
-        result["Nhãn"].isin(["HIGH_INFLATION", "UNUSUALLY_STEEP"]), 0.0
-    )
-    result["Mức đề xuất điều chỉnh"] = (
-        0.5 * location_score * shift
-    ).clip(-0.75, 0.75)
+    # Tighten only grades above 8.0 in high-inflation sections. Lower grades are
+    # unchanged, and a flag remains a review signal rather than evidence of misconduct.
+    excess = (
+        result["Điểm TB lớp"] - result["Điểm TB tham chiếu"]
+    ).clip(lower=0.0, upper=2.0).fillna(0.0)
+    inflation_score = result["Anomaly Score"].where(result["Nhãn"].eq("HIGH_INFLATION"), 0.0)
+    class_pressure = (0.75 * inflation_score * excess).clip(0.0, 1.5)
+    high_grade_share = ((result["_score"] - 8.0) / 2.0).clip(0.0, 1.0)
+    result["Mức đề xuất điều chỉnh"] = class_pressure * high_grade_share
     result["Adjusted_Score"] = (
         result["_score"] - result["Mức đề xuất điều chỉnh"]
     ).clip(0, 10)
