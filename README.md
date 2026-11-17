@@ -16,7 +16,7 @@ Sau khi phân tích, thanh bên có nút tải **PDF tổng hợp cả 5 trang**
 
 ## Hướng dẫn tải và chạy trên Windows bằng VS Code
 
-Hướng dẫn này giả định máy đã cài **Git for Windows**, **Python 3.10 trở lên** và **Visual Studio Code**. Các lệnh bên dưới dành cho PowerShell.
+Hướng dẫn này giả định máy đã cài **Git for Windows**, **Python 3.10 trở lên** và **Visual Studio Code**. Các lệnh chính bên dưới dành cho **PowerShell**. Hãy chạy từng lệnh một: sao chép một dòng, dán vào terminal, nhấn **Enter**, rồi chờ lệnh hoàn tất trước khi chạy dòng tiếp theo.
 
 ### Bước 1: Kiểm tra môi trường
 
@@ -29,9 +29,15 @@ python --version
 
 Mỗi lệnh cần in ra số phiên bản. Nếu terminal báo không nhận diện lệnh, hãy kiểm tra môi trường cài đặt/PATH trước khi tiếp tục.
 
-### Bước 2: Tạo thư mục để lưu project
+### Bước 2: Mở PowerShell trong VS Code và tạo thư mục
 
-Ví dụ dưới đây tạo thư mục `Projects` trong thư mục người dùng Windows. Lệnh `-Force` cho phép chạy lại nếu thư mục đã có:
+1. Mở VS Code.
+2. Trên thanh menu, chọn **Terminal → New Terminal**. Một khung terminal sẽ xuất hiện ở phía dưới cửa sổ.
+3. Nhìn đầu dòng trong terminal:
+   - Nếu có dạng `PS C:\Users\...>`, đây là PowerShell và bạn có thể chạy các lệnh bên dưới.
+   - Nếu chỉ có dạng `C:\Users\...>` mà không có `PS`, đây là Command Prompt (CMD). Bấm mũi tên nhỏ cạnh nút **+** ở góc phải khung Terminal, rồi chọn **PowerShell**. Mở terminal mới nếu cần.
+4. Sao chép dòng lệnh thứ nhất bên dưới, dán vào terminal và nhấn **Enter**. Lệnh tạo thư mục `Projects` bên trong thư mục tài khoản Windows. `$HOME` là đường dẫn thư mục tài khoản của bạn; `-Force` giúp lệnh chạy được cả khi `Projects` đã tồn tại.
+5. Khi terminal trả lại dấu nhắc lệnh, chạy dòng thứ hai. Dòng này chuyển terminal vào `Projects`.
 
 ```powershell
 New-Item -ItemType Directory -Force -Path "$HOME\Projects" | Out-Null
@@ -40,15 +46,27 @@ Set-Location "$HOME\Projects"
 
 Bạn có thể thay `$HOME\Projects` bằng nơi muốn lưu project, chẳng hạn thư mục Documents.
 
+Sau dòng thứ hai, đường dẫn ở đầu dòng lệnh sẽ kết thúc bằng `\Projects`. Hãy giữ terminal này mở để tiếp tục Bước 3. Nếu muốn dùng CMD thay cho PowerShell, hai lệnh tương đương là:
+
+```cmd
+if not exist "%USERPROFILE%\Projects" mkdir "%USERPROFILE%\Projects"
+cd /d "%USERPROFILE%\Projects"
+```
+
+Chạy các lệnh CMD trong terminal CMD; không dán cú pháp PowerShell vào CMD.
+Sau khi tạo thư mục bằng CMD, chuyển terminal sang PowerShell để làm các bước tiếp theo theo hướng dẫn: bấm mũi tên cạnh nút **+** và chọn **PowerShell**, rồi chạy `Set-Location "$HOME\Projects"`.
+
 ### Bước 3: Clone repository từ GitHub
 
-Chạy lệnh này ngay trong thư mục `Projects`:
+Xác nhận đầu dòng terminal đang ở đường dẫn kết thúc bằng `\Projects`, sau đó chạy lệnh này và nhấn **Enter**:
 
 ```powershell
 git clone https://github.com/duyanhdeptrai123neu/Sybau.git
 ```
 
 Git sẽ tự tạo thư mục `Sybau` và tải mã nguồn vào đó. Repository public nên không cần đăng nhập GitHub để clone.
+Chờ Git tải xong và dấu nhắc lệnh xuất hiện lại rồi mới sang bước tiếp theo. Nếu báo `git is not recognized`, kiểm tra Git đã được cài và mở terminal mới.
+Nếu báo thư mục `Sybau` đã tồn tại, không clone chồng lên thư mục đó; chuyển vào thư mục hiện có ở Bước 4.
 
 ### Bước 4: Mở đúng thư mục project trong VS Code
 
@@ -76,13 +94,13 @@ Get-Location
 
 ### Bước 5: Tạo môi trường ảo cho project
 
-Trong terminal VS Code, chạy:
+Trong terminal VS Code đang ở thư mục `Sybau`, chạy lệnh sau rồi nhấn **Enter**:
 
 ```powershell
 python -m venv .venv
 ```
 
-Lệnh này tạo folder `.venv` bên trong `Sybau`. Chờ lệnh chạy xong, rồi cài thư viện vào đúng môi trường đó:
+Lệnh này tạo folder `.venv` bên trong `Sybau`. Lần đầu có thể mất một lúc và thường không in thông báo khi thành công; chờ tới khi dấu nhắc lệnh xuất hiện lại. Sau đó chạy từng lệnh cài thư viện dưới đây, mỗi lệnh nhấn **Enter** và chờ hoàn tất:
 
 ```powershell
 .\.venv\Scripts\python.exe -m pip install --upgrade pip
@@ -102,7 +120,7 @@ Việc này giúp VS Code, Pylance và terminal nhận cùng môi trường Pyth
 
 ### Bước 7: Chạy dashboard
 
-Đảm bảo terminal vẫn đang ở thư mục `Sybau`, sau đó chạy:
+Đảm bảo terminal vẫn đang ở thư mục `Sybau` và `.venv` đã cài xong thư viện. Chạy lệnh sau rồi nhấn **Enter**:
 
 ```powershell
 .\.venv\Scripts\python.exe -m streamlit run app.py
