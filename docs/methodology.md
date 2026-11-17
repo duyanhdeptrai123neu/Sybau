@@ -8,17 +8,27 @@ xem trước: mã lớp/môn trong tệp này không nối trực tiếp đượ
 
 ## Phát hiện bất thường
 
-Mỗi lớp thường được so sánh trước với các lớp khác cùng Mã môn. Khi chưa có ít nhất
-hai lớp đối chiếu phù hợp, hệ thống dùng Nhóm môn và ghi rõ đây là tham chiếu yếu hơn.
-Điểm trung bình, tỷ lệ điểm từ 8,5 và độ lệch chuẩn được tính trên điểm học phần không
-trống; đồ án/thực tập/khóa luận được tách khỏi lớp thường.
+Các lớp đối chiếu được chọn theo thứ tự:
+
+1. Cùng Mã môn, cùng Năm học và cùng Học kỳ.
+2. Nếu chưa có ít nhất hai lớp đối chiếu đủ sĩ số, mở rộng sang cùng Mã môn ở các
+   năm học/học kỳ khác.
+3. Nếu vẫn thiếu, dùng cùng Nhóm môn trong cùng năm học/học kỳ.
+4. Cuối cùng, nếu cần, mở rộng nhóm môn sang các kỳ/năm khác và đánh dấu đây là tham
+   chiếu yếu hơn.
+
+Lớp đang đánh giá luôn bị loại khỏi nhóm tham chiếu. Nếu không có ít nhất hai lớp đối
+chiếu phù hợp sau các bước trên, hệ thống không gán score bất thường và ghi rõ không
+đủ dữ liệu so sánh. Điểm trung bình, tỷ lệ điểm từ 8,5 và độ lệch chuẩn được tính trên
+điểm học phần không trống; đồ án/thực tập/khóa luận được tách khỏi lớp thường.
 
 Độ lệch trung bình dùng z-score robust dựa trên trung vị và MAD của lớp đối chiếu. Score
-0–1 lấy tín hiệu mạnh nhất trong độ lệch trung bình, tỷ lệ điểm từ 8,5 trên 60% và độ
-phân tán thấp. Nhãn
-gồm HIGH_INFLATION, UNUSUALLY_STEEP, SUSPICIOUS_DISTRIBUTION hoặc NO_FLAG.
-Lớp ít sinh viên hay ít lớp đối chiếu được hạ mức tin cậy. Score chưa được hiệu chuẩn
-thành xác suất.
+0–1 hiện lấy tín hiệu mạnh nhất trong độ lệch trung bình, tỷ lệ điểm từ 8,5 trên 60% và
+độ phân tán thấp. Nhãn gồm HIGH_INFLATION, UNUSUALLY_STEEP, SUSPICIOUS_DISTRIBUTION
+hoặc NO_FLAG. Lớp ít sinh viên hay ít lớp đối chiếu được hạ mức tin cậy. Score chưa
+được hiệu chuẩn thành xác suất. Công thức score trọng số đang được nhóm xem xét riêng;
+chưa coi đó là công thức triển khai cho đến khi chuẩn hóa các thành phần và thống nhất
+cách xử lý chỉ số thiếu.
 
 ## Điểm đề xuất
 

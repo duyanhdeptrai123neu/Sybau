@@ -76,50 +76,88 @@ def detect_anomalies(data: pd.DataFrame, min_class_size: int = 8) -> pd.DataFram
             )
             continue
 
-        same_course = sections[
+        min_peer_size = max(5, min_class_size // 2)
+        same_course_term = sections[
             (sections["Mã môn"] == current["Mã môn"])
+            & (sections["Năm học"] == current["Năm học"])
+            & (sections["Học kỳ"] == current["Học kỳ"])
             & (sections[SECTION] != current[SECTION])
             & (~sections["Đồ án/thực tập"])
-            & (sections["Số sinh viên"] >= max(5, min_class_size // 2))
+            & (sections["Số sinh viên"] >= min_peer_size)
         ]
-        source = "Cùng môn"
-        peers = same_course
+        source = "Cùng môn, cùng năm học, cùng học kỳ"
+        peers = same_course_term
         if len(peers) < 2:
-            peers = sections[
+            same_course_all_periods = sections[
+                (sections["Mã môn"] == current["Mã môn"])
+                & (sections[SECTION] != current[SECTION])
+                & (~sections["Đồ án/thực tập"])
+                & (sections["Số sinh viên"] >= min_peer_size)
+            ]
+            if len(same_course_all_periods) >= 2:
+                peers = same_course_all_periods
+                source = "Cùng môn, mở rộng sang năm học/học kỳ khác"
+
+        if len(peers) < 2:
+            same_group_term = sections[
+                (sections["Nhóm môn"] == current["Nhóm môn"])
+                & (sections["Năm học"] == current["Năm học"])
+                & (sections["Học kỳ"] == current["Học kỳ"])
+                & (sections[SECTION] != current[SECTION])
+                & (~sections["Đồ án/thực tập"])
+                & (sections["Số sinh viên"] >= min_peer_size)
+            ]
+            if len(same_group_term) >= 2:
+                peers = same_group_term
+                source = "Cùng nhóm môn, cùng năm học/học kỳ (tham chiếu yếu hơn)"
+
+        if len(peers) < 2:
+            same_group_all_periods = sections[
                 (sections["Nhóm môn"] == current["Nhóm môn"])
                 & (sections[SECTION] != current[SECTION])
                 & (~sections["Đồ án/thực tập"])
-                & (sections["Số sinh viên"] >= max(5, min_class_size // 2))
+                & (sections["Số sinh viên"] >= min_peer_size)
             ]
-            source = "Cùng nhóm môn (tham chiếu yếu hơn)"
+            if len(same_group_all_periods) >= 2:
+                peers = same_group_all_periods
+                source = "Cùng nhóm môn, mở rộng thời gian (tham chiếu yếu hơn)"
+
+        if len(peers) < 2:
+            peers = sections.iloc[0:0]
 
         if peers.empty:
-            fallback = sections[
-                (sections[SECTION] != current[SECTION]) & (~sections["Đồ án/thực tập"])
-            ]
-            peer_mean = float(fallback["Điểm TB lớp"].median())
-            if not np.isfinite(peer_mean):
-                peer_mean = float(current["Điểm TB lớp"])
-            peer_sd = float(fallback["Độ lệch chuẩn"].median())
-            if not np.isfinite(peer_sd):
-                peer_sd = float(current["Độ lệch chuẩn"])
-            peer_a = float(fallback["Tỷ lệ điểm A"].median())
-            if not np.isfinite(peer_a):
-                peer_a = float(current["Tỷ lệ điểm A"])
-            mean_mad = 0.0
-            a_mad = 0.0
-            confidence = "Rất thấp · không đủ lớp đối chiếu"
-            source = "Toàn bộ lớp thường (tham chiếu yếu)"
-        else:
-            peer_mean = float(peers["Điểm TB lớp"].median())
-            peer_sd = float(peers["Độ lệch chuẩn"].median())
-            peer_a = float(peers["Tỷ lệ điểm A"].median())
-            mean_mad = float((peers["Điểm TB lớp"] - peer_mean).abs().median())
-            a_mad = float((peers["Tỷ lệ điểm A"] - peer_a).abs().median())
-            confidence = (
-                "Cao" if len(peers) >= 5 and current["Số sinh viên"] >= min_class_size
-                else "Vừa · số lớp đối chiếu còn ít"
+            diagnostics.append(
+                {
+                    SECTION: current[SECTION],
+                    "Mã môn": current["Mã môn"],
+                    "Năm học": current["Năm học"],
+                    "Học kỳ": current["Học kỳ"],
+                    "Số sinh viên": current["Số sinh viên"],
+                    "Điểm TB lớp": current["Điểm TB lớp"],
+                    "Độ lệch chuẩn": current["Độ lệch chuẩn"],
+                    "Tỷ lệ điểm A": current["Tỷ lệ điểm A"],
+                    "Điểm TB tham chiếu": np.nan,
+                    "Z robust": np.nan,
+                    "Nhóm đối chiếu": "Không đủ lớp đối chiếu theo môn/kỳ/năm",
+                    "Độ tin cậy": "Không đánh giá",
+                    "Anomaly Score": 0.0,
+                    "Nhãn": "NO_FLAG",
+                    "Giải thích": (
+                        "Không đủ lớp cùng môn hoặc cùng nhóm môn để tạo đối chiếu đáng tin cậy"
+                    ),
+                }
             )
+            continue
+
+        peer_mean = float(peers["Điểm TB lớp"].median())
+        peer_sd = float(peers["Độ lệch chuẩn"].median())
+        peer_a = float(peers["Tỷ lệ điểm A"].median())
+        mean_mad = float((peers["Điểm TB lớp"] - peer_mean).abs().median())
+        a_mad = float((peers["Tỷ lệ điểm A"] - peer_a).abs().median())
+        confidence = (
+            "Cao" if len(peers) >= 5 and current["Số sinh viên"] >= min_class_size
+            else "Vừa · số lớp đối chiếu còn ít"
+        )
 
         mean_z = _robust_z(
             float(current["Điểm TB lớp"]), peer_mean, mean_mad,
